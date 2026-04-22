@@ -2,7 +2,74 @@
 {% block title %}At-Risk Students{% endblock %}
 {% block page_title %}<i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>At-Risk Students{% endblock %}
 {% block content %}
+<!-- Student Details Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Student Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">Personal Information</h6>
+            <p><strong>Student ID:</strong> <span id="modalStudentId"></span></p>
+            <p><strong>Name:</strong> <span id="modalStudentName"></span></p>
+            <p><strong>Age:</strong> <span id="modalAge"></span></p>
+            <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+            <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">Academic Performance</h6>
+            <p><strong>Attendance Rate:</strong> <span id="modalAttendance"></span>%</p>
+            <p><strong>CA Score:</strong> <span id="modalCA"></span>/40</p>
+            <p><strong>MidSem Score:</strong> <span id="modalMidSem"></span>/60</p>
+            <p><strong>Previous CGPA:</strong> <span id="modalPrevCGPA"></span></p>
+            <p><strong>Study Hours/Week:</strong> <span id="modalStudyHours"></span> hrs</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row align-items-center">
+          <div class="col-md-4 text-center">
+            <div class="p-3 rounded bg-light">
+              <div class="h4 mb-1 text-danger" id="modalResult">At-Risk</div>
+              <small class="text-muted">Prediction Result</small>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="p-3 border rounded">
+              <h6 class="fw-bold text-primary"><i class="bi bi-lightbulb me-1"></i>Recommendations to Improve</h6>
+              <ul class="mb-0 small" id="modalRecommendations"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-muted small">
+          <strong>Predicted by:</strong> <span id="modalPredictedBy"></span> | 
+          <strong>Date:</strong> <span id="modalDate"></span> | 
+          <strong>Confidence:</strong> <span id="modalConfidence"></span>%
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if all_depts|length > 1 %}
+<div class="mb-3">
+  <select class="form-select form-select-sm" style="width:auto" onchange="window.location.href=this.value">
+    <option value="{{ url_for('at_risk') }}" {{ 'selected' if not dept_filter else '' }}>All Departments</option>
+    {% for dept in all_depts %}
+    <option value="{{ url_for('at_risk', dept=dept) }}" {{ 'selected' if dept_filter==dept else '' }}>{{ dept }}</option>
+    {% endfor %}
+  </select>
+</div>
+{% endif %}
+
 {% if students %}
+
 <div class="alert alert-danger border-0 d-flex align-items-center gap-3 mb-4">
   <i class="bi bi-exclamation-triangle-fill fs-4"></i>
   <div><strong>{{ students|length }} student(s) are predicted to be At-Risk of failure.</strong> Immediate academic intervention is strongly recommended for each student listed below.</div>
@@ -10,7 +77,7 @@
 <div class="row g-3">
   {% for s in students %}
   <div class="col-md-6 col-xl-4">
-    <div class="card border-danger border-2 h-100" style="border-radius:12px">
+    <div class="card border-danger border-2 h-100" style="border-radius:12px;cursor:pointer" onclick="showStudentModal({{ s.id }})" data-bs-toggle="modal" data-bs-target="#studentModal">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <div>
@@ -56,4 +123,73 @@
   <a href="{{ url_for('predict') }}" class="btn btn-primary mt-2">Make a Prediction</a>
 </div>
 {% endif %}
+{% endblock %}
+{% block scripts %}
+<script>
+// Student data for modal
+const studentData = {
+  {% for s in students %}
+  {{ s.id }}: {
+    student_id: "{{ s.student_id }}",
+    student_name: "{{ s.student_name }}",
+    age: {{ s.age }},
+    gender: "{{ s.gender }}",
+    department: "{{ s.department }}",
+    attendance: {{ s.attendance }},
+    ca_score: {{ s.ca_score }},
+    midsem_score: {{ s.midsem_score }},
+    prev_cgpa: {{ s.prev_cgpa }},
+    study_hours: {{ s.study_hours }},
+    result: "At-Risk",
+    confidence: {{ s.confidence }},
+    predicted_by: "{{ s.predicted_by }}",
+    date: "{{ s.timestamp.strftime('%d %b %Y, %H:%M') }}"
+  },
+  {% endfor %}
+};
+
+function showStudentModal(id) {
+  const s = studentData[id];
+  if (!s) return;
+  
+  document.getElementById('modalStudentId').textContent = s.student_id;
+  document.getElementById('modalStudentName').textContent = s.student_name;
+  document.getElementById('modalAge').textContent = s.age;
+  document.getElementById('modalGender').textContent = s.gender;
+  document.getElementById('modalDepartment').textContent = s.department;
+  document.getElementById('modalAttendance').textContent = s.attendance;
+  document.getElementById('modalCA').textContent = s.ca_score;
+  document.getElementById('modalMidSem').textContent = s.midsem_score;
+  document.getElementById('modalPrevCGPA').textContent = s.prev_cgpa;
+  document.getElementById('modalStudyHours').textContent = s.study_hours;
+  document.getElementById('modalResult').textContent = s.result;
+  document.getElementById('modalPredictedBy').textContent = s.predicted_by;
+  document.getElementById('modalDate').textContent = s.date;
+  document.getElementById('modalConfidence').textContent = s.confidence;
+  
+  // Generate specific recommendations for at-risk students
+  let recs = [];
+  recs.push('<li>⚠️ <strong>URGENT: At-Risk Status</strong> - Immediate action required!</li>');
+  
+  if (s.attendance < 75) {
+    recs.push('<li>📊 <strong>Critical Attendance:</strong> Your attendance is very low. Attend at least 75% of classes to pass.</li>');
+  }
+  if (s.ca_score < 20) {
+    recs.push('<li>📝 <strong>Low CA Score:</strong> You need to score higher in continuous assessments. Seek extra help.</li>');
+  }
+  if (s.midsem_score < 30) {
+    recs.push('<li>📖 <strong>Poor MidSem Performance:</strong> Consider dropping other activities to focus on studies.</li>');
+  }
+  if (s.prev_cgpa < 2.0) {
+    recs.push('<li>🎯 <strong>Past Performance:</strong> Your previous CGPA indicates significant gaps. Use tutoring services.</li>');
+  }
+  if (s.study_hours < 10) {
+    recs.push('<li>⏰ <strong>Insufficient Study Time:</strong> You must study at least 20 hours per week to improve.</li>');
+  }
+  
+  recs.push('<li>🆘 <strong>Action Plan:</strong> 1) Meet with academic advisor this week. 2) Join study groups. 3) Use tutoring services. 4) Monitor attendance strictly.</li>');
+  
+  document.getElementById('modalRecommendations').innerHTML = recs.join('');
+}
+</script>
 {% endblock %}

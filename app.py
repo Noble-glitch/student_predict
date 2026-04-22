@@ -281,8 +281,14 @@ def records():
 @app.route('/at-risk')
 @login_required
 def at_risk():
-    students = Prediction.query.filter_by(result='At-Risk').order_by(Prediction.timestamp.desc()).all()
-    return render_template('at_risk.html', students=students)
+    dept_filter = request.args.get('dept', '')
+    q = Prediction.query.filter_by(result='At-Risk')
+    if dept_filter:
+        q = q.filter_by(department=dept_filter)
+    students = q.order_by(Prediction.timestamp.desc()).all()
+    # Get all departments with at-risk students for the filter dropdown
+    all_depts = [d[0] for d in db.session.query(Prediction.department).filter_by(result='At-Risk').distinct().all()]
+    return render_template('at_risk.html', students=students, dept_filter=dept_filter, all_depts=all_depts)
 
 @app.route('/analytics')
 @login_required
@@ -297,7 +303,7 @@ def analytics():
     return render_template('analytics.html',
         dist=dist_count.get('Distinction',0), credit=dist_count.get('Credit',0),
         pass_=dist_count.get('Pass',0), risk=dist_count.get('At-Risk',0),
-        dept_data=json.dumps(dept_data),
+        dept_data_json=json.dumps(dept_data),
         model_results=META.get('model_results',{}),
         feat_imp=META.get('feature_importances',[]),
         colors=PERF_COLORS)
