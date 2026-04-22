@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}<i class="bi bi-people-fill me-2 text-primary"></i>User Management{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6 class="fw-bold mb-3">Add New User</h6>
+      <form method="POST" action="{{ url_for('add_user') }}">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="fullname" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            <option value="lecturer">Lecturer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" minlength="6" required/>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-semibold">
+          <i class="bi bi-person-plus me-2"></i>Create User
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="section-card">
+      <h6 class="fw-bold mb-3">All Users ({{ users|length }})</h6>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th>Action</th></tr></thead>
+          <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="fw-semibold" style="font-size:.85rem">{{ u.fullname }}</td>
+            <td><code>{{ u.username }}</code></td>
+            <td style="font-size:.82rem">{{ u.email }}</td>
+            <td><span class="badge {{ 'bg-danger' if u.role=='admin' else 'bg-primary' }}">{{ u.role }}</span></td>
+            <td style="font-size:.78rem;color:#6c757d">{{ u.created.strftime('%d %b %Y') }}</td>
+            <td>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('delete_user', uid=u.id) }}" onsubmit="return confirm('Delete user {{ u.username }}?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+              {% else %}
+              <span class="text-muted" style="font-size:.75rem">You</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

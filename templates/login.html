@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block auth_content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#1a3a5c 0%,#2d6a9f 100%)" class="d-flex align-items-center justify-content-center">
+  <div class="w-100" style="max-width:440px;padding:20px">
+    <div class="text-center mb-4">
+      <div class="mb-3">
+        <span style="background:rgba(255,255,255,.15);border-radius:50%;width:72px;height:72px;display:inline-flex;align-items:center;justify-content:center;">
+          <i class="bi bi-mortarboard-fill" style="font-size:2.2rem;color:#e8b84b"></i>
+        </span>
+      </div>
+      <h3 class="text-white fw-bold mb-1">SPPS</h3>
+      <p class="text-white-50" style="font-size:.88rem">AI Student Performance Prediction System</p>
+    </div>
+    <div class="card border-0" style="border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-1">Welcome Back</h5>
+        <p class="text-muted mb-4" style="font-size:.85rem">Sign in to your account to continue</p>
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in msgs %}
+            <div class="alert alert-{{ cat }} py-2" style="font-size:.85rem">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:.83rem">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="Enter username" required/>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold" style="font-size:.83rem">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+              <input type="password" name="password" id="pwd" class="form-control border-start-0 ps-0" placeholder="Enter password" required/>
+              <button type="button" class="btn btn-light border border-start-0" onclick="togglePwd()"><i class="bi bi-eye" id="eyeIcon"></i></button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+          </button>
+        </form>
+        <div class="mt-4 p-3 rounded" style="background:#f8f9fa;font-size:.78rem">
+          <div class="fw-semibold mb-1 text-muted">Demo Credentials</div>
+          <div><span class="badge bg-danger me-1">Admin</span> admin / admin123</div>
+          <div class="mt-1"><span class="badge bg-primary me-1">Lecturer</span> lecturer / lec123</div>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-white-50 mt-3" style="font-size:.75rem">
+      &copy; 2024 SPPS — Department of Computer Science
+    </p>
+  </div>
+</div>
+<script>
+function togglePwd(){
+  const p=document.getElementById('pwd');
+  const i=document.getElementById('eyeIcon');
+  p.type=p.type==='password'?'text':'password';
+  i.className=p.type==='password'?'bi bi-eye':'bi bi-eye-slash';
+}
+</script>
+{% endblock %}

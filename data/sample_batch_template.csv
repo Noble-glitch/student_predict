@@ -1,0 +1,6 @@
+Student_ID,Student_Name,Age,Gender,Department,Attendance_Rate,CA_Score,MidSem_Score,Prev_CGPA,Study_Hours_Week
+STU021,Chidi Nwosu,21,Male,Computer Science,85,33,16,3.7,18
+STU022,Aisha Bello,20,Female,Business Admin,90,37,18,4.2,24
+STU023,Emeka Eze,22,Male,Electrical Eng,45,14,6,1.6,4
+STU024,Grace Okafor,19,Female,Mass Communication,78,29,14,3.3,15
+STU025,Femi Adeyemi,23,Male,Accounting,62,23,11,2.6,11

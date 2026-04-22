@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}All Records{% endblock %}
+{% block page_title %}<i class="bi bi-journal-text me-2 text-primary"></i>Prediction Records{% endblock %}
+{% block content %}
+<div class="section-card">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h6 class="fw-bold mb-0">All Predictions</h6>
+    <div class="d-flex gap-2 flex-wrap">
+      {% for f in ['','Distinction','Credit','Pass','At-Risk'] %}
+      <a href="{{ url_for('records', filter=f) }}" class="btn btn-sm {{ 'btn-primary' if filter_result==f else 'btn-outline-secondary' }}">
+        {{ f or 'All' }}
+      </a>
+      {% endfor %}
+      <a href="{{ url_for('export_csv') }}" class="btn btn-sm btn-outline-success">
+        <i class="bi bi-download me-1"></i>Export
+      </a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr>
+        <th>ID</th><th>Student</th><th>Dept</th><th>Attend%</th>
+        <th>CA</th><th>MidSem</th><th>CGPA</th><th>Result</th>
+        <th>Confidence</th><th>Predicted By</th><th>Date</th>
+      </tr></thead>
+      <tbody>
+      {% for p in preds.items %}
+      <tr>
+        <td style="font-size:.78rem">#{{ p.id }}</td>
+        <td>
+          <div style="font-size:.85rem;font-weight:600">{{ p.student_name }}</div>
+          <div style="font-size:.75rem;color:#6c757d"><code>{{ p.student_id }}</code></div>
+        </td>
+        <td style="font-size:.8rem">{{ p.department }}</td>
+        <td style="font-size:.85rem">{{ p.attendance }}%</td>
+        <td style="font-size:.85rem">{{ p.ca_score }}</td>
+        <td style="font-size:.85rem">{{ p.midsem_score }}</td>
+        <td style="font-size:.85rem">{{ p.prev_cgpa }}</td>
+        <td>
+          <span class="badge badge-{{ p.result.lower().replace(' ','-') }}">{{ p.result }}</span>
+        </td>
+        <td style="font-size:.8rem">{{ p.confidence }}%</td>
+        <td style="font-size:.8rem">{{ p.predicted_by }}</td>
+        <td style="font-size:.78rem;color:#6c757d">{{ p.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="11" class="text-center py-5 text-muted">No records found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <!-- Pagination -->
+  {% if preds.pages > 1 %}
+  <nav class="mt-3">
+    <ul class="pagination pagination-sm justify-content-center mb-0">
+      {% if preds.has_prev %}<li class="page-item"><a class="page-link" href="{{ url_for('records', page=preds.prev_num, filter=filter_result) }}">Previous</a></li>{% endif %}
+      {% for pg in preds.iter_pages() %}
+        {% if pg %}
+        <li class="page-item {{ 'active' if pg==preds.page else '' }}">
+          <a class="page-link" href="{{ url_for('records', page=pg, filter=filter_result) }}">{{ pg }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+      {% if preds.has_next %}<li class="page-item"><a class="page-link" href="{{ url_for('records', page=preds.next_num, filter=filter_result) }}">Next</a></li>{% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

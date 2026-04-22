@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}<i class="bi bi-bar-chart-fill me-2 text-primary"></i>Analytics{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  {% set total = dist + credit + pass_ + risk %}
+  {% for label, val, color in [('Distinction',dist,'#198754'),('Credit',credit,'#0d6efd'),('Pass',pass_,'#e8a900'),('At-Risk',risk,'#dc3545')] %}
+  <div class="col-6 col-md-3">
+    <div class="section-card text-center">
+      <div class="fw-bold" style="font-size:2rem;color:{{ color }}">{{ val }}</div>
+      <div class="text-muted" style="font-size:.82rem">{{ label }}</div>
+      <div style="font-size:.75rem;color:{{ color }}">{{ '%.1f'|format((val/total*100) if total else 0) }}%</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="section-card h-100">
+      <h6 class="fw-bold mb-3">Performance Distribution</h6>
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="section-card h-100">
+      <h6 class="fw-bold mb-3">Performance by Department</h6>
+      <canvas id="deptChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="section-card">
+      <h6 class="fw-bold mb-3">Model Accuracy Comparison</h6>
+      <canvas id="modelChart"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="section-card">
+      <h6 class="fw-bold mb-3">Feature Importances (Random Forest)</h6>
+      {% for feat, imp in feat_imp %}
+      <div class="mb-2">
+        <div class="d-flex justify-content-between mb-1">
+          <span style="font-size:.8rem;font-weight:600">{{ feat.replace('_',' ').replace('Department ','') }}</span>
+          <span style="font-size:.8rem;color:#6c757d">{{ imp }}%</span>
+        </div>
+        <div class="progress" style="height:10px;border-radius:6px">
+          <div class="progress-bar" style="width:{{ imp }}%;background:{% if loop.index==1%}#1a3a5c{% elif loop.index==2%}#2d6a9f{% elif loop.index==3%}#4da6ff{% elif loop.index==4%}#82c4ff{% else %}#b8dfff{% endif %};border-radius:6px"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const deptRaw = {{ dept_data | safe }};
+const modelData = {{ model_results | tojson }};
+
+// Pie
+new Chart(document.getElementById('pieChart'),{
+  type:'doughnut',
+  data:{ labels:['Distinction','Credit','Pass','At-Risk'],
+         datasets:[{data:[{{ dist }},{{ credit }},{{ pass_ }},{{ risk }}],
+                    backgroundColor:['#198754','#0d6efd','#ffc107','#dc3545'],borderWidth:2,borderColor:'#fff'}]},
+  options:{plugins:{legend:{position:'bottom'}},cutout:'60%'}
+});
+
+// Dept bar
+const depts = Object.keys(deptRaw);
+const catColors = {'Distinction':'#198754','Credit':'#0d6efd','Pass':'#ffc107','At-Risk':'#dc3545'};
+new Chart(document.getElementById('deptChart'),{
+  type:'bar',
+  data:{
+    labels:depts,
+    datasets:Object.keys(catColors).map(cat=>({
+      label:cat, backgroundColor:catColors[cat],
+      data:depts.map(d=>(deptRaw[d]||{})[cat]||0), borderRadius:3
+    }))
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{x:{stacked:true},y:{stacked:true,grid:{color:'#f0f0f0'}}}}
+});
+
+// Model
+const mL=Object.keys(modelData), mA=mL.map(k=>modelData[k].accuracy);
+new Chart(document.getElementById('modelChart'),{
+  type:'bar',
+  data:{labels:mL,datasets:[{label:'Accuracy %',data:mA,
+    backgroundColor:['#adb5bd','#6c757d','#0d6efd','#198754'],borderRadius:6}]},
+  options:{plugins:{legend:{display:false}},scales:{y:{min:70,max:100,grid:{color:'#f0f0f0'}}}}
+});
+</script>
+{% endblock %}

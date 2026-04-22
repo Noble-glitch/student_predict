@@ -1,0 +1,219 @@
+{
+  "feature_names": [
+    "Age",
+    "Gender",
+    "Attendance_Rate",
+    "CA_Score",
+    "MidSem_Score",
+    "Prev_CGPA",
+    "Study_Hours_Week",
+    "Department_Accounting",
+    "Department_Agricultural Science",
+    "Department_Architecture",
+    "Department_Biochemistry",
+    "Department_Business Administration",
+    "Department_Chemical Engineering",
+    "Department_Civil Engineering",
+    "Department_Computer Science",
+    "Department_Economics",
+    "Department_Electrical Engineering",
+    "Department_Law",
+    "Department_Mass Communication",
+    "Department_Mathematics",
+    "Department_Mechanical Engineering",
+    "Department_Medicine",
+    "Department_Microbiology",
+    "Department_Nursing",
+    "Department_Pharmacy",
+    "Department_Physics",
+    "Department_Statistics"
+  ],
+  "dept_columns": [
+    "Department_Accounting",
+    "Department_Agricultural Science",
+    "Department_Architecture",
+    "Department_Biochemistry",
+    "Department_Business Administration",
+    "Department_Chemical Engineering",
+    "Department_Civil Engineering",
+    "Department_Computer Science",
+    "Department_Economics",
+    "Department_Electrical Engineering",
+    "Department_Law",
+    "Department_Mass Communication",
+    "Department_Mathematics",
+    "Department_Mechanical Engineering",
+    "Department_Medicine",
+    "Department_Microbiology",
+    "Department_Nursing",
+    "Department_Pharmacy",
+    "Department_Physics",
+    "Department_Statistics"
+  ],
+  "departments": [
+    "Accounting",
+    "Agricultural Science",
+    "Architecture",
+    "Biochemistry",
+    "Business Administration",
+    "Chemical Engineering",
+    "Civil Engineering",
+    "Computer Science",
+    "Economics",
+    "Electrical Engineering",
+    "Law",
+    "Mass Communication",
+    "Mathematics",
+    "Mechanical Engineering",
+    "Medicine",
+    "Microbiology",
+    "Nursing",
+    "Pharmacy",
+    "Physics",
+    "Statistics"
+  ],
+  "classes": [
+    "At-Risk",
+    "Credit",
+    "Distinction",
+    "Pass"
+  ],
+  "model_results": {
+    "Logistic Regression": {
+      "accuracy": 98.95,
+      "precision": 98.98,
+      "recall": 98.95,
+      "f1": 98.95
+    },
+    "Decision Tree": {
+      "accuracy": 93.55,
+      "precision": 93.67,
+      "recall": 93.55,
+      "f1": 93.58
+    },
+    "Gradient Boosting": {
+      "accuracy": 98.18,
+      "precision": 98.21,
+      "recall": 98.18,
+      "f1": 98.18
+    },
+    "Random Forest": {
+      "accuracy": 97.19,
+      "precision": 97.33,
+      "recall": 97.19,
+      "f1": 97.21
+    }
+  },
+  "feature_importances": [
+    [
+      "Prev_CGPA",
+      31.43
+    ],
+    [
+      "CA_Score",
+      30.75
+    ],
+    [
+      "MidSem_Score",
+      15.66
+    ],
+    [
+      "Study_Hours_Week",
+      9.28
+    ],
+    [
+      "Attendance_Rate",
+      8.16
+    ],
+    [
+      "Age",
+      1.73
+    ],
+    [
+      "Gender",
+      0.38
+    ],
+    [
+      "Department_Civil Engineering",
+      0.15
+    ],
+    [
+      "Department_Business Administration",
+      0.14
+    ],
+    [
+      "Department_Nursing",
+      0.14
+    ],
+    [
+      "Department_Microbiology",
+      0.14
+    ],
+    [
+      "Department_Statistics",
+      0.14
+    ],
+    [
+      "Department_Mass Communication",
+      0.13
+    ],
+    [
+      "Department_Architecture",
+      0.13
+    ],
+    [
+      "Department_Biochemistry",
+      0.13
+    ],
+    [
+      "Department_Medicine",
+      0.13
+    ],
+    [
+      "Department_Agricultural Science",
+      0.13
+    ],
+    [
+      "Department_Electrical Engineering",
+      0.13
+    ],
+    [
+      "Department_Law",
+      0.12
+    ],
+    [
+      "Department_Mechanical Engineering",
+      0.12
+    ],
+    [
+      "Department_Computer Science",
+      0.12
+    ],
+    [
+      "Department_Chemical Engineering",
+      0.12
+    ],
+    [
+      "Department_Accounting",
+      0.12
+    ],
+    [
+      "Department_Physics",
+      0.12
+    ],
+    [
+      "Department_Mathematics",
+      0.12
+    ],
+    [
+      "Department_Pharmacy",
+      0.12
+    ],
+    [
+      "Department_Economics",
+      0.12
+    ]
+  ],
+  "ca_max": 30,
+  "midsem_max": 20
+}
