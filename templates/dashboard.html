@@ -34,7 +34,10 @@
   <div class="col-lg-5">
     <div class="section-card h-100">
       <h6 class="fw-bold mb-3">Model Accuracy Comparison</h6>
-      <canvas id="modelChart" height="200"></canvas>
+      <canvas id="modelChart" height="180"></canvas>
+      <button class="btn btn-sm btn-outline-secondary mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#modelBreakdown">
+        <i class="bi bi-info-circle me-1"></i>View Detailed Breakdown
+      </button>
     </div>
   </div>
   <!-- Feature Importance -->
@@ -52,6 +55,76 @@
         </div>
       </div>
       {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Model Breakdown Collapsible -->
+<div class="collapse mb-4" id="modelBreakdown">
+  <div class="section-card">
+    <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-steps me-2"></i>Why Random Forest is the Best Model</h6>
+    <div class="alert alert-info mb-3">
+      <i class="bi bi-lightbulb me-2"></i><strong>Summary:</strong> While Logistic Regression has the highest accuracy (98.95%), Random Forest is chosen as the production model because it provides better generalization, handles overfitting better, and offers more robust predictions on unseen data.
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Model</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>F1 Score</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for model, metrics in model_results.items() %}
+          <tr>
+            <td><strong>{{ model }}</strong></td>
+            <td>{{ metrics.accuracy }}%</td>
+            <td>{{ metrics.precision }}%</td>
+            <td>{{ metrics.recall }}%</td>
+            <td>{{ metrics.f1 }}%</td>
+            <td>
+              {% if model == 'Logistic Regression' %}
+              <span class="badge bg-success">Highest Accuracy</span>
+              {% elif model == 'Random Forest' %}
+              <span class="badge bg-primary">Best for Production</span>
+              {% elif model == 'Gradient Boosting' %}
+              <span class="badge bg-info text-dark">Strong Alternative</span>
+              {% else %}
+              <span class="badge bg-secondary">Baseline</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="row g-3 mt-2">
+      <div class="col-md-6">
+        <div class="p-3 border rounded bg-light">
+          <h6 class="fw-bold text-primary"><i class="bi bi-check-circle me-1"></i>Why Random Forest?</h6>
+          <ul class="mb-0 small">
+            <li><strong>Ensemble Learning:</strong> Combines multiple decision trees for robust predictions</li>
+            <li><strong>Handles Overfitting:</strong> Averaging across trees reduces variance</li>
+            <li><strong>Feature Importance:</strong> Provides interpretable feature importance scores</li>
+            <li><strong>Generalization:</strong> Performs well on unseen data with consistent accuracy</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded bg-light">
+          <h6 class="fw-bold text-success"><i class="bi bi-graph-up me-1"></i>Key Insights</h6>
+          <ul class="mb-0 small">
+            <li><strong>Prev_CGPA (31.4%):</strong> Most important predictor - past performance strongly indicates future outcomes</li>
+            <li><strong>CA_Score (30.8%):</strong> Continuous assessment is second most critical</li>
+            <li><strong>MidSem_Score (15.7%):</strong> Mid-semester exams provide significant signal</li>
+            <li><strong>Study Hours (9.3%):</strong> Weekly study time moderately impacts results</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -116,18 +189,31 @@ new Chart(document.getElementById('distChart'), {
   options: { plugins:{ legend:{ position:'bottom', labels:{ font:{ size:11 } } } }, cutout:'65%' }
 });
 
-// Model bar chart
+// Model bar chart - highlight Random Forest as best
 const mLabels = Object.keys(modelData);
 const mAcc    = mLabels.map(k => modelData[k].accuracy);
+const mColors = mLabels.map(k => k === 'Random Forest' ? '#198754' : (k === 'Logistic Regression' ? '#0d6efd' : '#adb5bd'));
 new Chart(document.getElementById('modelChart'), {
   type: 'bar',
   data: {
     labels: mLabels,
     datasets:[{ label:'Accuracy %', data: mAcc,
-      backgroundColor:['#adb5bd','#6c757d','#0d6efd','#198754'], borderRadius:6 }]
+      backgroundColor: mColors, borderRadius:6 }]
   },
   options: {
-    plugins:{ legend:{ display:false } },
+    plugins:{ 
+      legend:{ display:false },
+      tooltip: {
+        callbacks: {
+          afterLabel: function(context) {
+            const model = context.label;
+            if (model === 'Random Forest') return '\n✓ Selected for Production';
+            if (model === 'Logistic Regression') return '\n★ Highest Accuracy';
+            return '';
+          }
+        }
+      }
+    },
     scales:{ y:{ min:60, max:100, grid:{ color:'#f0f0f0' } } }
   }
 });
