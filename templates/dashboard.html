@@ -2,6 +2,61 @@
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}<i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard{% endblock %}
 {% block content %}
+<!-- Student Details Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Student Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">Personal Information</h6>
+            <p><strong>Student ID:</strong> <span id="modalStudentId"></span></p>
+            <p><strong>Name:</strong> <span id="modalStudentName"></span></p>
+            <p><strong>Age:</strong> <span id="modalAge"></span></p>
+            <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+            <p><strong>Department:</strong> <span id="modalDepartment"></span></p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-muted mb-3">Academic Performance</h6>
+            <p><strong>Attendance Rate:</strong> <span id="modalAttendance"></span>%</p>
+            <p><strong>CA Score:</strong> <span id="modalCA"></span>/40</p>
+            <p><strong>MidSem Score:</strong> <span id="modalMidSem"></span>/60</p>
+            <p><strong>Previous CGPA:</strong> <span id="modalPrevCGPA"></span></p>
+            <p><strong>Study Hours/Week:</strong> <span id="modalStudyHours"></span> hrs</p>
+          </div>
+        </div>
+        <hr>
+        <div class="row align-items-center">
+          <div class="col-md-4 text-center">
+            <div class="p-3 rounded bg-light">
+              <div class="h4 mb-1" id="modalResult"></div>
+              <small class="text-muted">Prediction Result</small>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="p-3 border rounded">
+              <h6 class="fw-bold text-primary"><i class="bi bi-lightbulb me-1"></i>Recommendations to Improve</h6>
+              <ul class="mb-0 small" id="modalRecommendations"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 text-muted small">
+          <strong>Predicted by:</strong> <span id="modalPredictedBy"></span> | 
+          <strong>Date:</strong> <span id="modalDate"></span> | 
+          <strong>Confidence:</strong> <span id="modalConfidence"></span>%
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Stat Cards -->
 <div class="row g-3 mb-4">
   {% set cards = [
@@ -144,7 +199,7 @@
       </tr></thead>
       <tbody>
       {% for p in recent %}
-      <tr>
+      <tr style="cursor:pointer" onclick="showStudentModal({{ p.id }})" data-bs-toggle="modal" data-bs-target="#studentModal">
         <td><code style="font-size:.8rem">{{ p.student_id }}</code></td>
         <td style="font-size:.85rem;font-weight:600">{{ p.student_name }}</td>
         <td style="font-size:.8rem">{{ p.department }}</td>
@@ -201,7 +256,7 @@ new Chart(document.getElementById('modelChart'), {
       backgroundColor: mColors, borderRadius:6 }]
   },
   options: {
-    plugins:{ 
+    plugins:{
       legend:{ display:false },
       tooltip: {
         callbacks: {
@@ -217,5 +272,109 @@ new Chart(document.getElementById('modelChart'), {
     scales:{ y:{ min:60, max:100, grid:{ color:'#f0f0f0' } } }
   }
 });
+</script>
+
+<script>
+// Student data for modal - passed from Flask
+const studentData = {
+  {% for p in recent %}
+  {{ p.id }}: {
+    student_id: "{{ p.student_id }}",
+    student_name: "{{ p.student_name }}",
+    age: {{ p.age }},
+    gender: "{{ p.gender }}",
+    department: "{{ p.department }}",
+    attendance: {{ p.attendance }},
+    ca_score: {{ p.ca_score }},
+    midsem_score: {{ p.midsem_score }},
+    prev_cgpa: {{ p.prev_cgpa }},
+    study_hours: {{ p.study_hours }},
+    result: "{{ p.result }}",
+    confidence: {{ p.confidence }},
+    predicted_by: "{{ p.predicted_by }}",
+    date: "{{ p.timestamp.strftime('%d %b %Y, %H:%M') }}"
+  },
+  {% endfor %}
+};
+
+function showStudentModal(id) {
+  const s = studentData[id];
+  if (!s) return;
+  
+  document.getElementById('modalStudentId').textContent = s.student_id;
+  document.getElementById('modalStudentName').textContent = s.student_name;
+  document.getElementById('modalAge').textContent = s.age;
+  document.getElementById('modalGender').textContent = s.gender;
+  document.getElementById('modalDepartment').textContent = s.department;
+  document.getElementById('modalAttendance').textContent = s.attendance;
+  document.getElementById('modalCA').textContent = s.ca_score;
+  document.getElementById('modalMidSem').textContent = s.midsem_score;
+  document.getElementById('modalPrevCGPA').textContent = s.prev_cgpa;
+  document.getElementById('modalStudyHours').textContent = s.study_hours;
+  document.getElementById('modalResult').textContent = s.result;
+  document.getElementById('modalResult').className = 'h4 mb-1 text-' + (s.result === 'At-Risk' ? 'danger' : s.result === 'Distinction' ? 'success' : s.result === 'Credit' ? 'primary' : 'warning');
+  document.getElementById('modalPredictedBy').textContent = s.predicted_by;
+  document.getElementById('modalDate').textContent = s.date;
+  document.getElementById('modalConfidence').textContent = s.confidence;
+  
+  // Generate recommendations based on student performance
+  const recs = generateRecommendations(s);
+  document.getElementById('modalRecommendations').innerHTML = recs;
+}
+
+function generateRecommendations(s) {
+  let recs = [];
+  
+  // Based on attendance
+  if (s.attendance < 75) {
+    recs.push('<li>📊 <strong>Improve Attendance:</strong> Your attendance is below 75%. Aim to attend at least 75% of classes to stay on track.</li>');
+  } else if (s.attendance < 90) {
+    recs.push('<li>📊 <strong>Maintain Attendance:</strong> Good attendance! Keep it above 90% for better understanding of course material.</li>');
+  }
+  
+  // Based on CA score
+  if (s.ca_score < 20) {
+    recs.push('<li>📝 <strong>Boost CA Score:</strong> Your CA score is low. Actively participate in class and complete all assignments.</li>');
+  } else if (s.ca_score < 28) {
+    recs.push('<li>📝 <strong>Strengthen CA Performance:</strong> Room for improvement. Review topics you\'re struggling with and seek help.</li>');
+  }
+  
+  // Based on MidSem
+  if (s.midsem_score < 30) {
+    recs.push('<li>📖 <strong>MidSem Score Needs Work:</strong> Focus on understanding core concepts. Consider study groups or tutoring.</li>');
+  } else if (s.midsem_score < 42) {
+    recs.push('<li>📖 <strong>Good MidSem Performance:</strong> Keep up the momentum. Review and strengthen weaker areas.</li>');
+  }
+  
+  // Based on Previous CGPA
+  if (s.prev_cgpa < 2.5) {
+    recs.push('<li>🎯 <strong>Build on Past Performance:</strong> Focus on consistent improvement. Use past results to identify weak subjects.</li>');
+  }
+  
+  // Based on Study Hours
+  if (s.study_hours < 10) {
+    recs.push('<li>⏰ <strong>Increase Study Time:</strong> You study less than 10 hours/week. Aim for at least 15-20 hours for better results.</li>');
+  } else if (s.study_hours < 20) {
+    recs.push('<li>⏰ <strong>Optimize Study Hours:</strong> Good study habit. Consider adding more practice problems and revision sessions.</li>');
+  }
+  
+  // Based on result
+  if (s.result === 'At-Risk') {
+    recs.push('<li>⚠️ <strong>At-Risk Status:</strong> Consider meeting with your academic advisor immediately. Seek tutoring and create a study plan.</li>');
+  } else if (s.result === 'Pass') {
+    recs.push('<li>🌟 <strong>Passing but Room to Grow:</strong> You can achieve higher grades. Focus on improving CA and MidSem scores.</li>');
+  } else if (s.result === 'Credit') {
+    recs.push('<li>🌟 <strong>Good Performance:</strong> You\'re on track for a Credit. Maintain consistency and aim for Distinction.</li>');
+  } else if (s.result === 'Distinction') {
+    recs.push('<li>🏆 <strong>Excellent!</strong> Keep up the great work! Continue your current study habits and help peers.</li>');
+  }
+  
+  // General recommendation if no specific issues
+  if (recs.length === 0) {
+    recs.push('<li>✅ Your performance looks good! Keep maintaining your study habits and stay consistent.</li>');
+  }
+  
+  return recs.join('');
+}
 </script>
 {% endblock %}
